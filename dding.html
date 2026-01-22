@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>강화 시뮬레이터 (3%)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #eee;
+      padding: 20px;
+    }
+    .box {
+      border: 1px solid #444;
+      padding: 15px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 15px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+    .success {
+      color: #4caf50;
+      font-weight: bold;
+    }
+    .fail {
+      color: #f44336;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h2>강화 시뮬레이터 (성공확률 3%)</h2>
+
+<div class="box">
+  <p>결과: <span id="result">-</span></p>
+  <p>누적 실패: <span id="failCount">0</span></p>
+  <p>강화 시도까지 남은 실패: <span id="remain">32</span></p>
+  <p>연속실패해야 하는 횟수: <span id="maxFail">32</span></p>
+</div>
+
+<button onclick="enhance()">강화하기</button>
+<button onclick="autoEnhance()">자동강화</button>
+
+<script>
+  const successRate = 0.03;
+  const maxFail = 32;
+
+  let failCount = 0;
+  let autoRunning = false;
+
+  function updateUI(resultText, isSuccess) {
+    const resultEl = document.getElementById("result");
+    resultEl.textContent = resultText;
+    resultEl.className = isSuccess ? "success" : "fail";
+
+    document.getElementById("failCount").textContent = failCount;
+    document.getElementById("remain").textContent = maxFail - failCount;
+    document.getElementById("maxFail").textContent = maxFail;
+  }
+
+  function enhance() {
+    // 천장 도달 → 무조건 성공
+    if (failCount >= maxFail) {
+      failCount = 0;
+      updateUI("성공 기원", true);
+      return true;
+    }
+
+    // 확률 판정
+    if (Math.random() < successRate) {
+      failCount = 0;
+      updateUI("성공", true);
+      return true;
+    } else {
+      failCount++;
+      updateUI("실패", false);
+      return false;
+    }
+  }
+
+  function autoEnhance() {
+    if (autoRunning) return;
+    autoRunning = true;
+
+    const interval = setInterval(() => {
+      const success = enhance();
+
+      // 천장 성공 or 자동 종료 조건
+      if (success && failCount === 0) {
+        clearInterval(interval);
+        autoRunning = false;
+      }
+    }, 200);
+  }
+</script>
+
+</body>
+</html>
