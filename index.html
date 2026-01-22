@@ -42,7 +42,7 @@
   <strong>자동강화 속도</strong><br>
   <label><input type="radio" name="speed" value="2"> 2배속</label>
   <label><input type="radio" name="speed" value="3"> 3배속</label>
-  <label><input type="radio" name="speed" value="4"> 4배속</label>
+  <label><input type="radio" name="speed" value="4" checked> 4배속</label>
 </div>
 
 <div class="box">
@@ -54,12 +54,15 @@
 
 <button onclick="enhance()">강화하기</button>
 <button onclick="autoEnhance()">자동강화</button>
+<button onclick="stopAuto()">자동강화 중단</button>
 
 <script>
   let successRate = 0.03;
   let maxFail = Math.round(1 / successRate) - 1;
   let failCount = 0;
+
   let autoRunning = false;
+  let autoInterval = null;
 
   function updateRate() {
     successRate = Number(document.querySelector('input[name="rate"]:checked').value);
@@ -74,8 +77,14 @@
 
   function getSpeed() {
     const checked = document.querySelector('input[name="speed"]:checked');
-    if (!checked) return 500;
-    return 500 / Number(checked.value);
+    if (!checked) return 50;
+
+    const base = 50;
+    const speed = Number(checked.value);
+
+    if (speed === 2) return 25;
+    if (speed === 3) return 15;
+    if (speed === 4) return 5;
   }
 
   function updateUI(text, success) {
@@ -89,7 +98,6 @@
   }
 
   function enhance() {
-    // 천장
     if (failCount >= maxFail) {
       failCount = 0;
       updateUI("성공 (지금이기회다)", true);
@@ -111,14 +119,14 @@
     if (autoRunning) return;
     autoRunning = true;
 
-    const interval = setInterval(() => {
-      const success = enhance();
-
-      if (success && failCount === 0) {
-        clearInterval(interval);
-        autoRunning = false;
-      }
+    autoInterval = setInterval(() => {
+      enhance();
     }, getSpeed());
+  }
+
+  function stopAuto() {
+    clearInterval(autoInterval);
+    autoRunning = false;
   }
 
   updateUI("-", false);
