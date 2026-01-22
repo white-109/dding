@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>강화 시뮬레이터</title>
+  <title>강화 시뮬레이터 (완전본)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -19,15 +19,25 @@
       padding: 10px 15px;
       margin-right: 10px;
       cursor: pointer;
+      font-size: 14px;
     }
-    .success { color: #4caf50; font-weight: bold; }
-    .fail { color: #f44336; font-weight: bold; }
-    label { margin-right: 10px; cursor: pointer; }
+    .success {
+      color: #4caf50;
+      font-weight: bold;
+    }
+    .fail {
+      color: #f44336;
+      font-weight: bold;
+    }
+    label {
+      margin-right: 10px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
-<h2>강화 시뮬레이터</h2>
+<h2>강화 시뮬레이터 (완전본)</h2>
 
 <div class="box">
   <strong>강화 확률</strong><br>
@@ -64,6 +74,7 @@
   let autoRunning = false;
   let autoInterval = null;
 
+  // 확률 변경
   function updateRate() {
     successRate = Number(document.querySelector('input[name="rate"]:checked').value);
     maxFail = Math.round(1 / successRate) - 1;
@@ -71,64 +82,79 @@
     updateUI("-", false);
   }
 
-  document.querySelectorAll('input[name="rate"]').forEach(r =>
-    r.addEventListener("change", updateRate)
+  document.querySelectorAll('input[name="rate"]').forEach(radio =>
+    radio.addEventListener("change", updateRate)
   );
 
+  // 속도 계산
   function getSpeed() {
     const checked = document.querySelector('input[name="speed"]:checked');
     if (!checked) return 50;
 
-    const base = 50;
-    const speed = Number(checked.value);
-
-    if (speed === 2) return 25;
-    if (speed === 3) return 15;
-    if (speed === 4) return 5;
+    switch (checked.value) {
+      case "2": return 25;
+      case "3": return 15;
+      case "4": return 5;
+      default: return 50;
+    }
   }
 
-  function updateUI(text, success) {
+  // UI 업데이트
+  function updateUI(text, isSuccess) {
     const result = document.getElementById("result");
     result.textContent = text;
-    result.className = success ? "success" : "fail";
+    result.className = isSuccess ? "success" : "fail";
 
     document.getElementById("failCount").textContent = failCount;
     document.getElementById("remain").textContent = maxFail - failCount;
     document.getElementById("maxFail").textContent = maxFail;
   }
 
+  // 강화 로직
   function enhance() {
+    // 천장 성공
     if (failCount >= maxFail) {
       failCount = 0;
       updateUI("성공 (지금이기회다)", true);
-      return true;
+      return "ceiling";
     }
 
+    // 확률 성공
     if (Math.random() < successRate) {
       failCount = 0;
       updateUI("성공", true);
-      return true;
-    } else {
+      return "success";
+    } 
+    // 실패
+    else {
       failCount++;
       updateUI("실패", false);
-      return false;
+      return "fail";
     }
   }
 
+  // 자동강화
   function autoEnhance() {
     if (autoRunning) return;
     autoRunning = true;
 
     autoInterval = setInterval(() => {
-      enhance();
+      const result = enhance();
+
+      // 천장 성공이면 자동강화 중단
+      if (result === "ceiling") {
+        stopAuto();
+      }
     }, getSpeed());
   }
 
+  // 자동강화 중단
   function stopAuto() {
     clearInterval(autoInterval);
     autoRunning = false;
   }
 
+  // 초기 UI
   updateUI("-", false);
 </script>
 
