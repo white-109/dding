@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>강화 시뮬레이터 (3%)</title>
+  <title>강화 시뮬레이터</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -20,41 +20,68 @@
       margin-right: 10px;
       cursor: pointer;
     }
-    .success {
-      color: #4caf50;
-      font-weight: bold;
-    }
-    .fail {
-      color: #f44336;
-      font-weight: bold;
-    }
+    .success { color: #4caf50; font-weight: bold; }
+    .fail { color: #f44336; font-weight: bold; }
+    label { margin-right: 10px; cursor: pointer; }
   </style>
 </head>
 <body>
 
-<h2>강화 시뮬레이터 (성공확률 3%)</h2>
+<h2>강화 시뮬레이터</h2>
+
+<div class="box">
+  <strong>강화 확률</strong><br>
+  <label><input type="radio" name="rate" value="0.10"> 10%</label>
+  <label><input type="radio" name="rate" value="0.05"> 5%</label>
+  <label><input type="radio" name="rate" value="0.03" checked> 3%</label>
+  <label><input type="radio" name="rate" value="0.02"> 2%</label>
+  <label><input type="radio" name="rate" value="0.01"> 1%</label>
+</div>
+
+<div class="box">
+  <strong>자동강화 속도</strong><br>
+  <label><input type="radio" name="speed" value="2"> 2배속</label>
+  <label><input type="radio" name="speed" value="3"> 3배속</label>
+  <label><input type="radio" name="speed" value="4"> 4배속</label>
+</div>
 
 <div class="box">
   <p>결과: <span id="result">-</span></p>
   <p>누적 실패: <span id="failCount">0</span></p>
-  <p>강화 시도까지 남은 실패: <span id="remain">32</span></p>
-  <p>연속실패해야 하는 횟수: <span id="maxFail">32</span></p>
+  <p>강화 시도까지 남은 실패: <span id="remain">-</span></p>
+  <p>연속실패해야 하는 횟수: <span id="maxFail">-</span></p>
 </div>
 
 <button onclick="enhance()">강화하기</button>
 <button onclick="autoEnhance()">자동강화</button>
 
 <script>
-  const successRate = 0.03;
-  const maxFail = 32;
-
+  let successRate = 0.03;
+  let maxFail = Math.round(1 / successRate) - 1;
   let failCount = 0;
   let autoRunning = false;
 
-  function updateUI(resultText, isSuccess) {
-    const resultEl = document.getElementById("result");
-    resultEl.textContent = resultText;
-    resultEl.className = isSuccess ? "success" : "fail";
+  function updateRate() {
+    successRate = Number(document.querySelector('input[name="rate"]:checked').value);
+    maxFail = Math.round(1 / successRate) - 1;
+    failCount = 0;
+    updateUI("-", false);
+  }
+
+  document.querySelectorAll('input[name="rate"]').forEach(r =>
+    r.addEventListener("change", updateRate)
+  );
+
+  function getSpeed() {
+    const checked = document.querySelector('input[name="speed"]:checked');
+    if (!checked) return 500;
+    return 500 / Number(checked.value);
+  }
+
+  function updateUI(text, success) {
+    const result = document.getElementById("result");
+    result.textContent = text;
+    result.className = success ? "success" : "fail";
 
     document.getElementById("failCount").textContent = failCount;
     document.getElementById("remain").textContent = maxFail - failCount;
@@ -62,14 +89,13 @@
   }
 
   function enhance() {
-    // 천장 도달 → 무조건 성공
+    // 천장
     if (failCount >= maxFail) {
       failCount = 0;
-      updateUI("성공 기원", true);
+      updateUI("성공 (지금이기회다)", true);
       return true;
     }
 
-    // 확률 판정
     if (Math.random() < successRate) {
       failCount = 0;
       updateUI("성공", true);
@@ -88,13 +114,14 @@
     const interval = setInterval(() => {
       const success = enhance();
 
-      // 천장 성공 or 자동 종료 조건
       if (success && failCount === 0) {
         clearInterval(interval);
         autoRunning = false;
       }
-    }, 200);
+    }, getSpeed());
   }
+
+  updateUI("-", false);
 </script>
 
 </body>
