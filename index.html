@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>강화 시뮬레이터</title>
+<title>멘헤라 뇌 쓰기 컨텐츠</title>
 
 <style>
 body {
@@ -11,215 +11,117 @@ body {
   background: url('dding.png') no-repeat center center fixed;
   background-size: cover;
   color: #3b2b1a;
+  padding: 20px;
+  line-height: 2;
 }
 
-.container {
-  max-width: 420px;
-  margin: 30px auto;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 12px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+input{
+    width:80px;
+    padding:5px;
+    margin-left:10px;
 }
 
-.title {
-  text-align: center;
-  font-size: 26px;
-  margin-bottom: 10px;
-  font-weight: bold;
-  color: #4a2c1b;
+.result{
+    margin-top:20px;
+    font-size:22px;
+    font-weight:bold;
 }
 
-.panel {
-  background: rgba(202, 164, 114, 0.9);
-  border: 4px solid #8b5a2b;
-  border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 12px;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
-}
-
-label {
-  display: inline-block;
-  margin-right: 8px;
-  cursor: pointer;
-}
-
-.status {
-  background: rgba(255, 243, 212, 0.9);
-  border: 3px solid #b78b4a;
-  border-radius: 10px;
-  padding: 10px;
-  font-size: 14px;
-}
-
-.result {
-  font-size: 18px;
-  text-align: center;
-  margin-bottom: 6px;
-}
-
-.success {
-  color: #2e8b57;
-  animation: pop 0.3s ease;
-}
-
-.fail {
-  color: #c0392b;
-  animation: shake 0.3s;
-}
-
-@keyframes pop {
-  0% { transform: scale(0.9); }
-  100% { transform: scale(1); }
-}
-
-@keyframes shake {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  50% { transform: translateX(4px); }
-  75% { transform: translateX(-4px); }
-  100% { transform: translateX(0); }
-}
-
-.buttons {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-button {
-  flex: 1;
-  padding: 12px;
-  font-size: 14px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.btn-enhance {
-  background: #ffdd57;
-  border: 3px solid #c9a635;
-}
-
-.btn-auto {
-  background: #7fd1ae;
-  border: 3px solid #4a9c78;
-}
-
-.btn-stop {
-  background: #ff9f9f;
-  border: 3px solid #cc6b6b;
-}
-
-button:active {
-  transform: scale(0.96);
+button{
+    margin-top:15px;
+    padding:8px 15px;
+    font-size:14px;
+    cursor:pointer;
 }
 </style>
+
 </head>
 
 <body>
 
-<div class="container">
-  <div class="title">강화</div>
+<h2>항해물 포인트 계산기</h2>
 
-  <div class="panel">
-    <strong>강화 확률</strong>
-    <label><input type="radio" name="rate" value="0.10">10%</label>
-    <label><input type="radio" name="rate" value="0.05">5%</label>
-    <label><input type="radio" name="rate" value="0.03" checked>3%</label>
-    <label><input type="radio" name="rate" value="0.02">2%</label>
-    <label><input type="radio" name="rate" value="0.01">1%</label>
-  </div>
-
-  <div class="panel">
-    <strong>자동 강화 속도</strong>
-    <label><input type="radio" name="speed" value="2">2x</label>
-    <label><input type="radio" name="speed" value="3">3x</label>
-    <label><input type="radio" name="speed" value="4" checked>4x</label>
-  </div>
-
-  <div class="panel status">
-    <div class="result" id="result">-</div>
-    누적 실패: <span id="failCount">0</span><br>
-    남은 실패: <span id="remain">-</span><br>
-    천장 횟수: <span id="maxFail">-</span>
-  </div>
-
-  <div class="buttons">
-    <button class="btn-enhance" onclick="enhance()">강화</button>
-    <button class="btn-auto" onclick="autoEnhance()">자동</button>
-    <button class="btn-stop" onclick="stopAuto()">중단</button>
-  </div>
+<div>
+탈리세르의 나뭇잎 :
+<input type="number" id="leaf" min="0">
 </div>
 
+<div>
+데르무스의 가죽 :
+<input type="number" id="leather" min="0">
+</div>
+
+<div>
+카이로스카의 조각 :
+<input type="number" id="piece" min="0">
+</div>
+
+<div>
+실파드라의 술병 :
+<input type="number" id="bottle" min="0">
+</div>
+
+<div>
+아스트라곤의 뼈 :
+<input type="number" id="bone" min="0">
+</div>
+
+<div class="result">
+총 항해물 포인트 : <span id="total">0</span>
+</div>
+
+<button onclick="resetInputs()">입력값 초기화</button>
+
 <script>
-let successRate = 0.03;
-let maxFail = Math.round(1 / successRate) - 1;
-let failCount = 0;
-let autoInterval = null;
-let autoRunning = false;
 
-document.querySelectorAll('input[name="rate"]').forEach(r =>
-  r.addEventListener("change", () => {
-    successRate = Number(r.value);
-    maxFail = Math.round(1 / successRate) - 1;
-    failCount = 0;
-    updateUI("-");
-  })
-);
+const points = {
+    leaf:100,
+    leather:200,
+    piece:300,
+    bottle:500,
+    bone:1000
+};
 
-function getSpeed() {
-  const s = document.querySelector('input[name="speed"]:checked').value;
-  return s == 2 ? 25 : s == 3 ? 15 : 5;
+const ids = Object.keys(points);
+
+function calculate(){
+    let total = 0;
+
+    ids.forEach(id=>{
+        let value = Number(document.getElementById(id).value) || 0;
+        total += value * points[id];
+
+        localStorage.setItem(id,value);
+    });
+
+    document.getElementById("total").innerText = total.toLocaleString();
 }
 
-function updateUI(text, success) {
-  const r = document.getElementById("result");
-  r.textContent = text;
-  r.className = "result " + (success ? "success" : "fail");
-
-  document.getElementById("failCount").textContent = failCount;
-  document.getElementById("remain").textContent = maxFail - failCount;
-  document.getElementById("maxFail").textContent = maxFail;
+function loadSaved(){
+    ids.forEach(id=>{
+        const saved = localStorage.getItem(id);
+        if(saved){
+            document.getElementById(id).value = saved;
+        }
+    });
+    calculate();
 }
 
-function enhance() {
-  if (failCount >= maxFail) {
-    failCount = 0;
-    updateUI("✨ 성공 (지금이기회다)", true);
-    return "ceiling";
-  }
-
-  if (Math.random() < successRate) {
-    failCount = 0;
-    updateUI("성공", true);
-    return "success";
-  } else {
-    failCount++;
-    updateUI("실패", false);
-    return "fail";
-  }
+function resetInputs(){
+    ids.forEach(id=>{
+        document.getElementById(id).value = "";
+        localStorage.removeItem(id);
+    });
+    calculate();
 }
 
-function autoEnhance() {
-  if (autoRunning) return;
-  autoRunning = true;
+ids.forEach(id=>{
+    document.getElementById(id).addEventListener("input",calculate);
+});
 
-  autoInterval = setInterval(() => {
-    if (enhance() === "ceiling") stopAuto();
-  }, getSpeed());
-}
+loadSaved();
 
-function stopAuto() {
-  clearInterval(autoInterval);
-  autoRunning = false;
-}
-
-updateUI("-");
 </script>
 
 </body>
 </html>
-
