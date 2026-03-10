@@ -2,67 +2,108 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>멘헤라 뇌 쓰기 컨텐츠</title>
+<title>항해물 포인트 계산기</title>
 
 <style>
+
 body {
   margin: 0;
   font-family: "Arial Rounded MT Bold", Arial, sans-serif;
   background: url('dding.png') no-repeat center center fixed;
   background-size: cover;
   color: #3b2b1a;
-  padding: 20px;
-  line-height: 2;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
+/* 계산기 카드 */
+.container{
+  background: rgba(255,255,255,0.85);
+  padding:40px;
+  border-radius:15px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
+  width:320px;
+}
+
+/* 제목 */
+h2{
+  text-align:center;
+  margin-bottom:25px;
+}
+
+/* 항목 줄 */
+.item{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+
+/* 입력칸 */
 input{
-    width:80px;
-    padding:5px;
-    margin-left:10px;
+  width:80px;
+  padding:6px;
+  font-size:14px;
 }
 
+/* 총 포인트 */
 .result{
-    margin-top:20px;
-    font-size:22px;
-    font-weight:bold;
+  margin-top:20px;
+  font-size:22px;
+  font-weight:bold;
+  text-align:center;
 }
 
+/* 버튼 */
 button{
-    margin-top:15px;
-    padding:8px 15px;
-    font-size:14px;
-    cursor:pointer;
+  margin-top:15px;
+  width:100%;
+  padding:10px;
+  font-size:15px;
+  border:none;
+  border-radius:8px;
+  background:#ff9f2e;
+  color:white;
+  cursor:pointer;
 }
-</style>
 
+button:hover{
+  background:#ff8712;
+}
+
+</style>
 </head>
 
 <body>
 
+<div class="container">
+
 <h2>항해물 포인트 계산기</h2>
 
-<div>
-탈리세르의 나뭇잎 :
+<div class="item">
+<span>탈리세르의 나뭇잎</span>
 <input type="number" id="leaf" min="0">
 </div>
 
-<div>
-데르무스의 가죽 :
+<div class="item">
+<span>데르무스의 가죽</span>
 <input type="number" id="leather" min="0">
 </div>
 
-<div>
-카이로스카의 조각 :
+<div class="item">
+<span>카이로스카의 조각</span>
 <input type="number" id="piece" min="0">
 </div>
 
-<div>
-실파드라의 술병 :
+<div class="item">
+<span>실파드라의 술병</span>
 <input type="number" id="bottle" min="0">
 </div>
 
-<div>
-아스트라곤의 뼈 :
+<div class="item">
+<span>아스트라곤의 뼈</span>
 <input type="number" id="bone" min="0">
 </div>
 
@@ -71,6 +112,8 @@ button{
 </div>
 
 <button onclick="resetInputs()">입력값 초기화</button>
+
+</div>
 
 <script>
 
@@ -90,7 +133,6 @@ function calculate(){
     ids.forEach(id=>{
         let value = Number(document.getElementById(id).value) || 0;
         total += value * points[id];
-
         localStorage.setItem(id,value);
     });
 
@@ -109,7 +151,7 @@ function loadSaved(){
 
 function resetInputs(){
     ids.forEach(id=>{
-        document.getElementById(id).value = "";
+        document.getElementById(id).value="";
         localStorage.removeItem(id);
     });
     calculate();
